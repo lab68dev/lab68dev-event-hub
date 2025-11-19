@@ -27,7 +27,7 @@ const emptySpeaker: Speaker = {
   linkedin: "",
 }
 
-export default function SpeakersPage() {
+export default function AdminSpeakersPage() {
   const router = useRouter()
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [speakers, setSpeakers] = useState<Speaker[]>([])
@@ -35,12 +35,15 @@ export default function SpeakersPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState<Speaker>(emptySpeaker)
 
-  const handleLogout = () => {
-    router.push("/")
-  }
-
   useEffect(() => {
-    const stored = localStorage.getItem(" lab68_speakers")
+    // Check if user is admin
+    const role = localStorage.getItem("user_role")
+    if (role !== "admin") {
+      router.push("/dashboard")
+      return
+    }
+
+    const stored = localStorage.getItem("lab68_speakers")
     if (stored) {
       setSpeakers(JSON.parse(stored))
     }
@@ -84,72 +87,14 @@ export default function SpeakersPage() {
     }
   }
 
-  const sampleSpeakers: Speaker[] = [
-    {
-      id: "1",
-      name: "Sarah Chen",
-      role: "CTO",
-      company: "TechForward Inc",
-      category: "keynote",
-      bio: "Sarah is a visionary leader with over 15 years of experience in web development and cloud architecture. She's passionate about mentoring the next generation of developers.",
-      twitter: "@sarahchen",
-      linkedin: "linkedin.com/in/sarahchen"
-    },
-    {
-      id: "2",
-      name: "Marcus Rodriguez",
-      role: "Lead Engineer",
-      company: "CloudScale",
-      category: "speaker",
-      bio: "Marcus specializes in building scalable backend systems and APIs. He's contributed to several open-source projects and loves sharing his knowledge through workshops.",
-      twitter: "@marcusdev",
-      linkedin: "linkedin.com/in/marcusrodriguez"
-    },
-    {
-      id: "3",
-      name: "Emma Watson",
-      role: "AI Researcher",
-      company: "DeepMind Labs",
-      category: "keynote",
-      bio: "Emma is at the forefront of AI research, focusing on how artificial intelligence can enhance developer productivity and create better software tools.",
-      twitter: "@emmawatsonai",
-      linkedin: "linkedin.com/in/emmawatson"
-    },
-    {
-      id: "4",
-      name: "David Park",
-      role: "Full Stack Developer",
-      company: "Vercel",
-      category: "workshop",
-      bio: "David is known for his expertise in real-time web applications. He's built collaboration tools used by millions of developers worldwide.",
-      twitter: "@davidpark",
-      linkedin: "linkedin.com/in/davidpark"
-    },
-    {
-      id: "5",
-      name: "Lisa Anderson",
-      role: "DevRel Lead",
-      company: "GitHub",
-      category: "speaker",
-      bio: "Lisa is a developer advocate who believes in the power of community. She's been involved in open source for over a decade and loves helping teams collaborate better.",
-      twitter: "@lisaanderson",
-      linkedin: "linkedin.com/in/lisaanderson"
-    },
-    {
-      id: "6",
-      name: "James Kim",
-      role: "Product Manager",
-      company: "Microsoft",
-      category: "speaker",
-      bio: "James bridges the gap between development and product, bringing insights from managing large-scale developer tools at Microsoft.",
-      twitter: "@jameskim",
-      linkedin: "linkedin.com/in/jameskim"
-    },
-  ]
-
-  const filteredSpeakers = selectedCategory === "all" 
-    ? speakers 
+  const filteredSpeakers = selectedCategory === "all"
+    ? speakers
     : speakers.filter(s => s.category === selectedCategory)
+
+  const handleLogout = () => {
+    localStorage.removeItem("user_role")
+    router.push("/")
+  }
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -165,42 +110,42 @@ export default function SpeakersPage() {
           <ul className="space-y-2">
             <li>
               <Link
-                href="/dashboard"
+                href="/dashboard/admin"
                 className="block px-4 py-3 border border-border hover:border-primary hover:text-primary font-mono text-xs uppercase tracking-wide transition-colors"
               >
-                Dashboard
+                Admin Dashboard
               </Link>
             </li>
             <li>
               <Link
-                href="/dashboard/schedule"
-                className="block px-4 py-3 border border-border hover:border-primary hover:text-primary font-mono text-xs uppercase tracking-wide transition-colors"
-              >
-                My Schedule
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/dashboard/speakers"
+                href="/dashboard/admin/speakers"
                 className="block px-4 py-3 border border-primary bg-primary text-background font-mono text-xs uppercase tracking-wide"
               >
-                Speakers
+                Manage Speakers
               </Link>
             </li>
             <li>
               <Link
-                href="/dashboard/tickets"
+                href="/dashboard/admin/schedule"
                 className="block px-4 py-3 border border-border hover:border-primary hover:text-primary font-mono text-xs uppercase tracking-wide transition-colors"
               >
-                Tickets
+                Manage Schedule
               </Link>
             </li>
             <li>
               <Link
-                href="/dashboard/settings"
+                href="/dashboard/admin/tickets"
                 className="block px-4 py-3 border border-border hover:border-primary hover:text-primary font-mono text-xs uppercase tracking-wide transition-colors"
               >
-                Settings
+                Manage Tickets
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/dashboard/admin/organizations"
+                className="block px-4 py-3 border border-border hover:border-primary hover:text-primary font-mono text-xs uppercase tracking-wide transition-colors"
+              >
+                Organizations
               </Link>
             </li>
           </ul>

@@ -1,6 +1,102 @@
+"use client"
+
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import Link from "next/link"
+import { useState, useEffect } from "react"
+
+interface Speaker {
+  id: string
+  name: string
+  role: string
+  company: string
+  category: string
+  bio: string
+  twitter: string
+  linkedin: string
+}
+
+interface Session {
+  id: string
+  time: string
+  title: string
+  speaker: string
+  track: string
+  description: string
+  day: string
+}
+
+function SpeakerList() {
+  const [speakers, setSpeakers] = useState<Speaker[]>([])
+
+  useEffect(() => {
+    const stored = localStorage.getItem("lab68_speakers")
+    if (stored) {
+      setSpeakers(JSON.parse(stored))
+    }
+  }, [])
+
+  if (speakers.length === 0) {
+    return (
+      <div className="text-center">
+        <p className="text-muted-foreground text-lg">No speakers announced yet. Stay tuned!</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {speakers.map((speaker, index) => (
+        <div key={speaker.id} className="border border-border hover:border-primary transition-colors p-8">
+          <div className="bg-secondary aspect-square mb-6 flex items-center justify-center">
+            <div className="font-mono text-6xl text-primary">{speaker.name.charAt(0)}</div>
+          </div>
+          <h3 className="font-sans text-xl font-bold mb-2">{speaker.name}</h3>
+          <p className="text-muted-foreground text-sm mb-1">{speaker.role}</p>
+          <p className="font-mono text-xs text-primary">{speaker.company}</p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function ScheduleList() {
+  const [sessions, setSessions] = useState<Session[]>([])
+
+  useEffect(() => {
+    const stored = localStorage.getItem("lab68_sessions")
+    if (stored) {
+      setSessions(JSON.parse(stored))
+    }
+  }, [])
+
+  if (sessions.length === 0) {
+    return (
+      <div className="text-center">
+        <p className="text-muted-foreground text-lg">No sessions scheduled yet. Check back later!</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-4">
+      {sessions.map((session) => (
+        <div key={session.id} className="border border-border hover:border-primary transition-colors">
+          <div className="p-6 flex flex-col md:flex-row md:items-center gap-4">
+            <div className="font-mono text-primary text-lg min-w-20">{session.time}</div>
+            <div className="flex-1">
+              <h3 className="font-sans text-xl font-bold mb-1">{session.title}</h3>
+              <p className="text-muted-foreground text-sm">{session.speaker}</p>
+            </div>
+            <div className="border border-muted px-4 py-2 font-mono text-xs uppercase text-muted-foreground">
+              {session.track}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 export default function HomePage() {
   return (
@@ -78,46 +174,7 @@ export default function HomePage() {
       <section id="schedule" className="border-t border-border">
         <div className="container mx-auto px-4 py-24">
           <h2 className="font-sans text-4xl md:text-5xl font-bold mb-12">Schedule</h2>
-          <div className="space-y-4">
-            {[
-              { time: "09:00", title: "Registration & Coffee", speaker: "Networking", track: "General" },
-              {
-                time: "10:00",
-                title: "Keynote: The Future of Web Development",
-                speaker: "Sarah Chen",
-                track: "Main Stage",
-              },
-              {
-                time: "11:00",
-                title: "Building Scalable APIs with Next.js",
-                speaker: "Marcus Rodriguez",
-                track: "Track A",
-              },
-              { time: "11:00", title: "AI-Powered Developer Tools", speaker: "Emma Watson", track: "Track B" },
-              { time: "12:30", title: "Lunch & Networking", speaker: "All Attendees", track: "General" },
-              {
-                time: "14:00",
-                title: "Workshop: Real-time Collaboration Apps",
-                speaker: "David Park",
-                track: "Workshop",
-              },
-              { time: "15:30", title: "Panel: Open Source in 2025", speaker: "Multiple Speakers", track: "Main Stage" },
-              { time: "17:00", title: "Closing & After Party", speaker: "Everyone", track: "General" },
-            ].map((session, index) => (
-              <div key={index} className="border border-border hover:border-primary transition-colors">
-                <div className="p-6 flex flex-col md:flex-row md:items-center gap-4">
-                  <div className="font-mono text-primary text-lg min-w-[80px]">{session.time}</div>
-                  <div className="flex-1">
-                    <h3 className="font-sans text-xl font-bold mb-1">{session.title}</h3>
-                    <p className="text-muted-foreground text-sm">{session.speaker}</p>
-                  </div>
-                  <div className="border border-muted px-4 py-2 font-mono text-xs uppercase text-muted-foreground">
-                    {session.track}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <ScheduleList />
         </div>
       </section>
 
@@ -125,25 +182,7 @@ export default function HomePage() {
       <section id="speakers" className="border-t border-border">
         <div className="container mx-auto px-4 py-24">
           <h2 className="font-sans text-4xl md:text-5xl font-bold mb-12">Meet the Speakers</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { name: "Sarah Chen", role: "CTO", company: "TechForward Inc" },
-              { name: "Marcus Rodriguez", role: "Lead Engineer", company: "CloudScale" },
-              { name: "Emma Watson", role: "AI Researcher", company: "DeepMind Labs" },
-              { name: "David Park", role: "Full Stack Developer", company: "Vercel" },
-              { name: "Lisa Anderson", role: "DevRel Lead", company: "GitHub" },
-              { name: "James Kim", role: "Product Manager", company: "Microsoft" },
-            ].map((speaker, index) => (
-              <div key={index} className="border border-border hover:border-primary transition-colors p-8">
-                <div className="bg-secondary aspect-square mb-6 flex items-center justify-center">
-                  <div className="font-mono text-6xl text-primary">{speaker.name.charAt(0)}</div>
-                </div>
-                <h3 className="font-sans text-xl font-bold mb-2">{speaker.name}</h3>
-                <p className="text-muted-foreground text-sm mb-1">{speaker.role}</p>
-                <p className="font-mono text-xs text-primary">{speaker.company}</p>
-              </div>
-            ))}
-          </div>
+          <SpeakerList />
         </div>
       </section>
 
@@ -151,54 +190,8 @@ export default function HomePage() {
       <section id="tickets" className="border-t border-border">
         <div className="container mx-auto px-4 py-24">
           <h2 className="font-sans text-4xl md:text-5xl font-bold mb-12">Get Your Tickets</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              {
-                name: "General Admission",
-                price: "$299",
-                features: ["Access to all talks", "Lunch included", "Networking sessions", "Conference swag"],
-              },
-              {
-                name: "VIP Pass",
-                price: "$599",
-                features: [
-                  "Everything in General",
-                  "VIP lounge access",
-                  "Meet & greet speakers",
-                  "Priority seating",
-                  "Exclusive workshops",
-                ],
-              },
-              {
-                name: "Online Access",
-                price: "$99",
-                features: ["Live stream access", "Recording access", "Digital resources", "Online chat"],
-              },
-            ].map((ticket, index) => (
-              <div
-                key={index}
-                className={`border-2 ${index === 1 ? "border-primary" : "border-border"} p-8 hover:border-primary transition-colors`}
-              >
-                <h3 className="font-sans text-2xl font-bold mb-4">{ticket.name}</h3>
-                <div className="mb-6">
-                  <span className="font-mono text-4xl font-bold text-primary">{ticket.price}</span>
-                  <span className="text-muted-foreground ml-2">/ person</span>
-                </div>
-                <ul className="space-y-3 mb-8">
-                  {ticket.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-start gap-2 text-sm">
-                      <span className="text-primary mt-1">▸</span>
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  className={`w-full border-2 ${index === 1 ? "border-primary bg-primary text-background hover:bg-transparent hover:text-primary" : "border-foreground hover:bg-foreground hover:text-background"} py-3 font-mono text-sm uppercase tracking-wide transition-all`}
-                >
-                  Purchase
-                </button>
-              </div>
-            ))}
+          <div className="text-center">
+            <p className="text-muted-foreground text-lg">Ticket sales coming soon. Follow us for updates!</p>
           </div>
         </div>
       </section>
