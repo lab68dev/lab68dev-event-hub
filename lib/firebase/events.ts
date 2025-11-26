@@ -110,15 +110,15 @@ export const getEventById = async (eventId: string): Promise<Event | null> => {
  */
 export const getPublicEvents = async (): Promise<Event[]> => {
   try {
+    // Simplified query to avoid index requirements
     const eventsQuery = query(
       collection(db, 'events'),
-      where('isPublic', '==', true),
       where('status', '==', 'published'),
-      orderBy('startDate', 'desc')
+      where('isPublic', '==', true)
     );
 
     const snapshot = await getDocs(eventsQuery);
-    return snapshot.docs.map(doc => ({
+    const events = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
       startDate: doc.data().startDate.toDate(),
@@ -126,6 +126,9 @@ export const getPublicEvents = async (): Promise<Event[]> => {
       createdAt: doc.data().createdAt.toDate(),
       updatedAt: doc.data().updatedAt.toDate(),
     })) as Event[];
+    
+    // Sort in memory instead of using orderBy
+    return events.sort((a, b) => b.startDate.getTime() - a.startDate.getTime());
   } catch (error) {
     console.error('Error getting public events:', error);
     throw error;
@@ -139,12 +142,11 @@ export const getEventsByOrganization = async (organizationId: string): Promise<E
   try {
     const eventsQuery = query(
       collection(db, 'events'),
-      where('organizationId', '==', organizationId),
-      orderBy('createdAt', 'desc')
+      where('organizationId', '==', organizationId)
     );
 
     const snapshot = await getDocs(eventsQuery);
-    return snapshot.docs.map(doc => ({
+    const events = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
       startDate: doc.data().startDate.toDate(),
@@ -152,6 +154,9 @@ export const getEventsByOrganization = async (organizationId: string): Promise<E
       createdAt: doc.data().createdAt.toDate(),
       updatedAt: doc.data().updatedAt.toDate(),
     })) as Event[];
+    
+    // Sort in memory instead of using orderBy
+    return events.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   } catch (error) {
     console.error('Error getting organization events:', error);
     throw error;
@@ -281,17 +286,19 @@ export const getParticipantRegistrations = async (
   try {
     const registrationsQuery = query(
       collection(db, 'registrations'),
-      where('participantId', '==', participantId),
-      orderBy('registeredAt', 'desc')
+      where('participantId', '==', participantId)
     );
 
     const snapshot = await getDocs(registrationsQuery);
-    return snapshot.docs.map(doc => ({
+    const registrations = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
       registeredAt: doc.data().registeredAt.toDate(),
       checkedInAt: doc.data().checkedInAt?.toDate(),
     })) as Registration[];
+    
+    // Sort in memory
+    return registrations.sort((a, b) => b.registeredAt.getTime() - a.registeredAt.getTime());
   } catch (error) {
     console.error('Error getting participant registrations:', error);
     throw error;
@@ -305,17 +312,19 @@ export const getEventRegistrations = async (eventId: string): Promise<Registrati
   try {
     const registrationsQuery = query(
       collection(db, 'registrations'),
-      where('eventId', '==', eventId),
-      orderBy('registeredAt', 'desc')
+      where('eventId', '==', eventId)
     );
 
     const snapshot = await getDocs(registrationsQuery);
-    return snapshot.docs.map(doc => ({
+    const registrations = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
       registeredAt: doc.data().registeredAt.toDate(),
       checkedInAt: doc.data().checkedInAt?.toDate(),
     })) as Registration[];
+    
+    // Sort in memory
+    return registrations.sort((a, b) => b.registeredAt.getTime() - a.registeredAt.getTime());
   } catch (error) {
     console.error('Error getting event registrations:', error);
     throw error;

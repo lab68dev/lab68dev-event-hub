@@ -1,0 +1,101 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && getUserRole() == 'admin';
+    }
+    
+    function isOrganization() {
+      return isAuthenticated() && getUserRole() == 'organization';
+    }
+    
+    function isParticipant() {
+      return isAuthenticated() && getUserRole() == 'participant';
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      // Users can read their own profile, admins can read all
+      allow read: if isUser(userId) || isAdmin();
+      // Users can create their own profile during signup
+      allow create: if isUser(userId);
+      // Users can update their own profile
+      allow update: if isUser(userId);
+      // Only admins can delete users
+      allow delete: if isAdmin();
+    }
+    
+    // Events collection
+    match /events/{eventId} {
+      // Anyone can read published public events
+      allow read: if resource.data.isPublic == true && resource.data.status == 'published';
+      // Organizations can read their own events
+      allow read: if isAuthenticated() && resource.data.organizationId == request.auth.uid;
+      // Admins can read all events
+      allow read: if isAdmin();
+      
+      // Organizations can create events
+      allow create: if isOrganization() && request.resource.data.organizationId == request.auth.uid;
+      
+      // Organizations can update their own events
+      allow update: if isAuthenticated() && resource.data.organizationId == request.auth.uid;
+      
+      // Organizations and admins can delete events
+      allow delete: if (isAuthenticated() && resource.data.organizationId == request.auth.uid) || isAdmin();
+    }
+    
+    // Registrations collection
+    match /registrations/{registrationId} {
+      // Participants can read their own registrations
+      allow read: if isAuthenticated() && resource.data.participantId == request.auth.uid;
+      // Organizations can read registrations for their events
+      allow read: if isAuthenticated() && 
+                     get(/databases/$(database)/documents/events/$(resource.data.eventId)).data.organizationId == request.auth.uid;
+      // Admins can read all registrations
+      allow read: if isAdmin();
+      
+      // Participants can create registrations
+      allow create: if isParticipant() && request.resource.data.participantId == request.auth.uid;
+      
+      // Participants can update their own registrations
+      allow update: if isAuthenticated() && resource.data.participantId == request.auth.uid;
+      
+      // Participants and admins can delete registrations
+      allow delete: if (isAuthenticated() && resource.data.participantId == request.auth.uid) || isAdmin();
+    }
+    
+    // Teams collection
+    match /teams/{teamId} {
+      // Anyone authenticated can read teams for events they're registered for
+      allow read: if isAuthenticated();
+      
+      // Team leaders can create teams
+      allow create: if isParticipant() && request.resource.data.leaderId == request.auth.uid;
+      
+      // Team leaders can update their teams
+      allow update: if isAuthenticated() && resource.data.leaderId == request.auth.uid;
+      
+      // Team leaders and admins can delete teams
+      allow delete: if (isAuthenticated() && resource.data.leaderId == request.auth.uid) || isAdmin();
+    }
+    
+    // Default: deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
