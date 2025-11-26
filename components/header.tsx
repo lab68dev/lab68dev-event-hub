@@ -14,6 +14,12 @@ export function Header() {
 
           <nav className="hidden md:flex items-center gap-8">
             <Link
+              href="/events"
+              className="font-mono text-sm uppercase tracking-wide hover:text-primary transition-colors"
+            >
+              Events
+            </Link>
+            <Link
               href="#schedule"
               className="font-mono text-sm uppercase tracking-wide hover:text-primary transition-colors"
             >
@@ -26,12 +32,6 @@ export function Header() {
               Speakers
             </Link>
             <Link
-              href="#tickets"
-              className="font-mono text-sm uppercase tracking-wide hover:text-primary transition-colors"
-            >
-              Tickets
-            </Link>
-            <Link
               href="/login"
               className="border border-primary bg-primary text-background px-6 py-2 font-mono text-sm uppercase tracking-wide hover:bg-transparent hover:text-primary transition-all"
             >
@@ -39,7 +39,7 @@ export function Header() {
             </Link>
           </nav>
 
-          <button className="md:hidden border border-primary p-2">
+          <button className="md:hidden border border-primary p-2" aria-label="Open menu">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="square" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
